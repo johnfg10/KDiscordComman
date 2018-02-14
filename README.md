@@ -11,7 +11,7 @@ repositories {
     }
 }
 
-compile 'io.github.johnfg10:KDiscordCommandCore:1.0.0'
+compile 'io.github.johnfg10:KDiscordCommandCore:*LATEST_VERSION*'
 ```
 
 ## Discord 4j version
@@ -27,7 +27,7 @@ repositories {
     }
 }
 
-compile 'io.github.johnfg10:KDiscordCommandDiscord4j:1.0.1'
+compile 'io.github.johnfg10:KDiscordCommandDiscord4j:*LATEST_VERSION*'
 ```
 
 example code registration:
