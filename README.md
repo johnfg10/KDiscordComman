@@ -47,3 +47,6 @@ example code command:
         channel.sendMessage("Hello, ${user.name}")
     }
 ```
+
+## Testbot
+test bot takes one command line argument, a discord token which it uses to login to it is simply a area in which i can test new features and ensure old ones still work if you want to know about features thats most likely a good place to start!
