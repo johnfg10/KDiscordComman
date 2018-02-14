@@ -1,0 +1,5 @@
+rootProject.name = 'KDiscordCommand'
+include 'Core'
+include 'Discord4J'
+include 'TestBot'
+
