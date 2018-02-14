@@ -10,7 +10,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
 
-open class KDiscordCommand(val iPermisionStorage: IPermmisionStorage, val defaultPrefix: String) {
+open public class KDiscordCommand(val iPermisionStorage: IPermmisionStorage, val defaultPrefix: String) {
 
     protected val classMap: MutableMap<KFunction<*>, KClass<*>> = mutableMapOf()
 
@@ -30,7 +30,7 @@ open class KDiscordCommand(val iPermisionStorage: IPermmisionStorage, val defaul
 
     constructor(file: File, defaultPrefix: String) : this(JsonPermissionStore(file), defaultPrefix)
 
-    fun RegisterCommand(vararg  classes: KClass<*>){
+    public fun RegisterCommand(vararg  classes: KClass<*>){
         for (clazz in classes){
             clazz.functions.forEach {
                 clazz.functions.filter { it.findAnnotation<Command>() != null }.forEach {
@@ -55,7 +55,7 @@ open class KDiscordCommand(val iPermisionStorage: IPermmisionStorage, val defaul
         }
     }
 
-    fun UnRegisterCommand(vararg classes: KClass<*>){
+    public fun UnRegisterCommand(vararg classes: KClass<*>){
         for (clazz in classes){
             clazz.functions.forEach {
                 clazz.functions.filter { it.findAnnotation<Command>() != null }.forEach {
