@@ -1,5 +1,6 @@
 # KDiscordCommand
 ## Discord 4j version
+```gradle
 repositories {
     jcenter()
     maven {
@@ -11,8 +12,10 @@ repositories {
 }
 
 compile 'io.github.johnfg10:KDiscordCommandDiscord4j:1.0.1'
+```
 
 ## Core version
+```gradle
 repositories {
     jcenter()
     maven {
@@ -21,3 +24,4 @@ repositories {
 }
 
 compile 'io.github.johnfg10:KDiscordCommandCore:1.0.0'
+```
