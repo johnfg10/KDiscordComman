@@ -16,7 +16,8 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.*
 
-class KDiscord4J(val discordClient: IDiscordClient) : KDiscordCommand() {
+class KDiscord4J(val discordClient: IDiscordClient, defaultPrefix: String) : KDiscordCommand(defaultPrefix) {
+    constructor(discordClient: IDiscordClient) : this(discordClient, "+")
 
     val IUSER_TYPE = IUser::class.createType()
     val ICHANNEL_TYPE = IChannel::class.createType()
@@ -42,7 +43,7 @@ class KDiscord4J(val discordClient: IDiscordClient) : KDiscordCommand() {
 
         val prefix: String = guildPrefix[user] ?: defaultPrefix
 
-        if(message == "DEBUGINFO"){
+/*        if(message == "DEBUGINFO"){
             msg.channel.sendMessage(
                     "command map size: ${commandMap.size}\n" +
                             "Permission map size: ${permissionMap.size}"
@@ -50,16 +51,13 @@ class KDiscord4J(val discordClient: IDiscordClient) : KDiscordCommand() {
             if (commandMap.isNotEmpty()){
                 msg.channel.sendMessage(commandMap.toString())
             }
-        }
-
-
+        }*/
 
         if (message.startsWith(prefix)){
             val msgSplit = message.split(" ")
 
             val msgCommand = msgSplit[0].replace(prefix, "")
 
-            println(msgCommand)
             val cmdMap = commandMap.filter { it.key.aliases.contains(msgCommand) }
             if (cmdMap.isEmpty())
                 return
@@ -73,11 +71,8 @@ class KDiscord4J(val discordClient: IDiscordClient) : KDiscordCommand() {
                 args[cmd.instanceParameter!!] = classMap[cmd]!!.createInstance()
 
                 for(it in cmd.valueParameters){
-                    //println("name: ${it.name} Type: ${it.type} Kind: ${it.kind}")
                     val cmdAnnotation = it.findAnnotation<CommandArg>()
                     if (cmdAnnotation != null){
-/*                        println("none null cmd found")
-                        println(cmdAnnotation.type)*/
                         when(cmdAnnotation.type){
                             CommandArgumentType.Author -> {
                                 if (it.type.isSubtypeOf(IUSER_TYPE)){

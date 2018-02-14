@@ -1,39 +1,84 @@
-buildscript {
-    ext.kotlin_version = '1.2.21'
+def aVersion = "1.0.1"
+def aGroup = "io.github.johnfg10"
+def aDevName = "johnfg10"
+def aDevEmail = "j.gray26@hotmail.com"
 
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
-group 'io.github.johnfg10'
-version '1.0.0'
-
-apply plugin: 'kotlin'
+version aVersion
+group aGroup
 
 repositories {
-    mavenCentral()
-    jcenter()
     maven {
         url  "https://jitpack.io"
     }
-
+    maven {
+        url "https://dl.bintray.com/johnfg10/KDiscordCommandFramework"
+    }
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
-    compile project(":Core")
-
+    compile 'io.github.johnfg10:KDiscordCommandCore:1.0.0'
     compile "com.github.austinv11:Discord4J:2.9.3"
 }
 
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+// Create the pom configuration:
+def pomConfig = {
+    licenses {
+        license {
+            name "MIT"
+            url "https://github.com/johnfg10/KDiscordsCommand/blob/master/LICENCE.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id aDevName
+            name aDevName
+            email aDevEmail
+        }
+    }
+    scm {
+        url "https://github.com/johnfg10/KDiscordCommand"
+    }
 }
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+
+// Create the publication with the pom configuration:
+publishing {
+    publications {
+        MainPub(MavenPublication) {
+            from components.java
+            groupId aGroup
+            artifactId 'KDiscordCommandDiscord4j'
+            version aVersion
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'makes commands on discord a breeze')
+                root.appendNode('name', 'KDiscordCommandDiscord4j')
+                def node = root.appendNode('repositories')
+                node.appendNode('repository').appendNode('url', 'https://jcenter.bintray.com')
+                node.appendNode('repository').appendNode('url', 'https://jitpack.io')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+
+    publish = true
+
+    publications = ['MainPub']
+
+    pkg {
+        repo = 'KDiscordCommandFramework'
+        name = 'KDiscordCommandDiscord4j'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/johnfg10/KDiscordCommand.git'
+        version {
+            name = aVersion
+            desc = 'makes commands on discord a breeze'
+            vcsTag = aVersion
+        }
+    }
 }

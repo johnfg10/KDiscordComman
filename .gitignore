@@ -16,3 +16,4 @@ gradle-app.setting
 .idea/
 permissions.json
 */out/
+*/build/
