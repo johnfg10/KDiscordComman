@@ -23,12 +23,18 @@ version '1.0.0'
 
 allprojects {
     ext.kotlin_version = '1.2.21'
-
+    
     apply plugin: "org.jetbrains.kotlin.jvm"
     apply plugin: "com.jfrog.bintray"
     apply plugin: 'maven-publish'
     apply plugin: 'java-library'
     apply plugin: "io.franzbecker.gradle-lombok"
+
+    task sourceJar(type: Jar){
+        archiveName = "${baseName}-${version}-sources.${extension}"
+        from sourceSets.main.output
+        from sourceSets.main.allSource
+    }
 
     repositories {
         mavenCentral()

@@ -21,7 +21,7 @@ class JsonPermissionStore(private val location: File) : IPermmisionStorage {
             println(location.readText())
 
             userPermissionStore.permissions.forEach { println("ups entry Guild ID: ${it.guildId} User ID: ${it.userId} " +
-                    "sPerms: ${it.permissions.joinToString("\n")}") }
+                    "Perms: ${it.permissions.joinToString("\n")}") }
         }
     }
 

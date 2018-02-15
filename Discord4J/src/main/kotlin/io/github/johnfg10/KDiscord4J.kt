@@ -165,7 +165,7 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
     private fun List<String>.ToFormattedString() : String {
         var str = ""
         this.forEach {
-            e -> str += "e \n"
+            e -> str += "$e \n"
         }
         return str
     }

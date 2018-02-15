@@ -1,4 +1,4 @@
-def aVersion = "1.0.1s"
+def aVersion = "1.0.5"
 def aGroup = "io.github.johnfg10"
 def aDevName = "johnfg10"
 def aDevEmail = "j.gray26@hotmail.com"
@@ -45,11 +45,14 @@ def pomConfig = {
 // Create the publication with the pom configuration:
 publishing {
     publications {
-        MainPub(MavenPublication) {
+        java(MavenPublication){
             from components.java
-            groupId aGroup
+            artifact sourceJar {
+                classifier "sources"
+            }
+            groupId "io.github.johnfg10"
             artifactId 'KDiscordCommandCore'
-            version aVersion
+            version "$aVersion"
             pom.withXml {
                 def root = asNode()
                 root.appendNode('description', 'makes commands on discord a breeze')
@@ -66,7 +69,7 @@ bintray {
 
     publish = true
 
-    publications = ['MainPub']
+    publications = ['java']
 
     pkg {
         repo = 'KDiscordCommandFramework'
