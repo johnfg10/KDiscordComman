@@ -4,22 +4,31 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
 
     dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath "io.franzbecker:gradle-lombok:1.11"
     }
 }
+
+//def kotlin_version = '1.2.21'
 
 group 'io.github.johnfg10'
 version '1.0.0'
 
 allprojects {
-    apply plugin: 'com.jfrog.bintray'
-    apply plugin: 'kotlin'
+    ext.kotlin_version = '1.2.21'
+
+    apply plugin: "org.jetbrains.kotlin.jvm"
+    apply plugin: "com.jfrog.bintray"
     apply plugin: 'maven-publish'
     apply plugin: 'java-library'
+    apply plugin: "io.franzbecker.gradle-lombok"
 
     repositories {
         mavenCentral()

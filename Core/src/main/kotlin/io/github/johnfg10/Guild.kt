@@ -1,5 +1,6 @@
 package io.github.johnfg10
 
-abstract class Guild{
-    abstract val guildId : Long
-}
+import lombok.Data
+
+@Data
+open class Guild(open val guildId: Long)

@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.21'
     compile 'com.google.code.gson:gson:2.8.2'
 }

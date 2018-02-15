@@ -7,6 +7,9 @@ import io.github.johnfg10.command.flags.CommandArgument
 import io.github.johnfg10.command.flags.CommandFlag
 import io.github.johnfg10.command.flags.containsFlag
 import io.github.johnfg10.command.flags.getValue
+import io.github.johnfg10.permission.AUserPermission
+import io.github.johnfg10.permission.Permission
+import io.github.johnfg10.user.User
 import sx.blah.discord.util.DiscordException
 import sx.blah.discord.api.ClientBuilder
 import sx.blah.discord.api.IDiscordClient
@@ -17,6 +20,8 @@ import sx.blah.discord.handle.obj.IUser
 
 lateinit var botToken: String
 
+lateinit var kDiscord: KDiscord4J
+
 fun main(args: Array<String>) {
     botToken = args[0]
     if (botToken.isEmpty())
@@ -24,7 +29,7 @@ fun main(args: Array<String>) {
 
     val client = createClient(botToken, false)
 
-    val kDiscord = KDiscord4J(client)
+    kDiscord = KDiscord4J(client)
     kDiscord+TestBot()::class
 
     client.login()
@@ -46,6 +51,7 @@ fun createClient(token: String, login: Boolean): IDiscordClient { // Returns a n
 
 class TestBot {
     @Command("test", ["test"], "testing")
+    @Permission("test.testing")
     fun testcmd(@CommandArg(CommandArgumentType.Author) author: IUser,
                 @CommandArg(CommandArgumentType.Mentions) users: List<IUser>,
                 @CommandArg(CommandArgumentType.Prefix) prefix: String,
@@ -73,5 +79,10 @@ class TestBot {
         val value = args.getValue("p")
         if (value != null)
             channel.sendMessage("val : $value")
+    }
+
+    @Command("permme", ["permme"], "")
+    fun permMe(@CommandArg(CommandArgumentType.Author) author: IUser, @CommandArg(CommandArgumentType.Channel) channel: IChannel, @CommandArg(CommandArgumentType.Guild) guild: IGuild){
+        kDiscord.iPermisionStorage.giveUserPermission(User(author.longID, guild.longID), "test.testing")
     }
 }

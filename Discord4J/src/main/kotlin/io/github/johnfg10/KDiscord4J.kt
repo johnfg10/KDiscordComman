@@ -4,6 +4,9 @@ import io.github.johnfg10.command.CommandArg
 import io.github.johnfg10.command.CommandArgumentType
 import io.github.johnfg10.command.flags.CommandFlag
 import io.github.johnfg10.command.flags.CommandPhraser
+import io.github.johnfg10.permission.Permission
+import io.github.johnfg10.storage.IPermmisionStorage
+import io.github.johnfg10.storage.JsonPermissionStore
 import io.github.johnfg10.user.User
 import sx.blah.discord.api.IDiscordClient
 import sx.blah.discord.api.events.EventSubscriber
@@ -12,12 +15,21 @@ import sx.blah.discord.handle.obj.IChannel
 import sx.blah.discord.handle.obj.IGuild
 import sx.blah.discord.handle.obj.IMessage
 import sx.blah.discord.handle.obj.IUser
+import java.io.File
 import kotlin.reflect.KParameter
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.*
 
-class KDiscord4J(val discordClient: IDiscordClient, defaultPrefix: String) : KDiscordCommand(defaultPrefix) {
-    constructor(discordClient: IDiscordClient) : this(discordClient, "+")
+class KDiscord4J(private val discordClient: IDiscordClient, override val iPermisionStorage: IPermmisionStorage,
+                 override val defaultPrefix: String) : KDiscordCommand(iPermisionStorage , defaultPrefix) {
+
+    constructor(discordClient: IDiscordClient, file: File, defaultPrefix: String) : this(discordClient,
+            JsonPermissionStore(file), defaultPrefix)
+
+    constructor(discordClient: IDiscordClient, defaultPrefix: String) : this(discordClient, File("permissions.json"),
+            defaultPrefix)
+
+    constructor(discordClient: IDiscordClient) : this(discordClient, "+=")
 
     val IUSER_TYPE = IUser::class.createType()
     val ICHANNEL_TYPE = IChannel::class.createType()
@@ -29,7 +41,8 @@ class KDiscord4J(val discordClient: IDiscordClient, defaultPrefix: String) : KDi
     val LIST_IUSER_TYPE = MutableList::class.createType(listOf(KTypeProjection(null, IUSER_TYPE)))
     val ARRAY_IUSER_TYPE = Array<IUser>::class.createType(listOf(KTypeProjection(null, IUSER_TYPE)))
     val LIST_COMMAND_FLAG_TYPE = MutableList::class.createType(listOf(KTypeProjection(null, COMMAND_FLAG)))
-    val LIST_COMMAND_ARGUMENT_TYPE = MutableList::class.createType(listOf(KTypeProjection(null, COMMAND_ARGUMENT)))
+    val LIST_COMMAND_ARGUMENT_TYPE =
+            MutableList::class.createType(listOf(KTypeProjection(null, COMMAND_ARGUMENT)))
 
 
     init{
@@ -42,16 +55,6 @@ class KDiscord4J(val discordClient: IDiscordClient, defaultPrefix: String) : KDi
         val user = discordUserToUser(msg.author, msg.guild)
 
         val prefix: String = guildPrefix[user] ?: defaultPrefix
-
-/*        if(message == "DEBUGINFO"){
-            msg.channel.sendMessage(
-                    "command map size: ${commandMap.size}\n" +
-                            "Permission map size: ${permissionMap.size}"
-            )
-            if (commandMap.isNotEmpty()){
-                msg.channel.sendMessage(commandMap.toString())
-            }
-        }*/
 
         if (message.startsWith(prefix)){
             val msgSplit = message.split(" ")
@@ -66,6 +69,24 @@ class KDiscord4J(val discordClient: IDiscordClient, defaultPrefix: String) : KDi
             val cmd = cmdMap[cmdKey]
 
             if (cmd != null){
+
+                if (permissionMap.contains(cmd)){
+                    val perms = permissionMap[cmd] ?: throw IllegalArgumentException("Can not load permissions from permission maps")
+
+                    val userPerm = iPermisionStorage.findUserPermission(user)
+                    if (userPerm == null) {
+                        msg.channel.sendMessage("Unfortunately it appears you do not have any permissions attached to your username, Required perms: ${perms.toFormattedString()}" )
+                        return
+                    }
+
+                    if (!userPerm.permissions.containsAll(perms.toStringList())){
+                        val remainingRequiredPerms = userPerm.permissions - perms.toStringList()
+                        msg.channel.sendMessage("You are missing permissions, permissions missing are: ${remainingRequiredPerms.ToFormattedString()}")
+                        return
+                    }
+                }
+                //if we get this far all permissions are correct
+
                 val args = mutableMapOf<KParameter, Any?>()
 
                 args[cmd.instanceParameter!!] = classMap[cmd]!!.createInstance()
@@ -141,4 +162,26 @@ class KDiscord4J(val discordClient: IDiscordClient, defaultPrefix: String) : KDi
         return User(user.longID, guild.longID)
     }
 
+    private fun List<String>.ToFormattedString() : String {
+        var str = ""
+        this.forEach {
+            e -> str += "e \n"
+        }
+        return str
+    }
+
+    private fun List<Permission>.toFormattedString() : String {
+        var str = ""
+        this.forEach { perm -> str += perm.permission + "\n"
+        }
+        return str
+    }
+
+    private fun List<Permission>.toStringList() : List<String> {
+        var strList = mutableListOf<String>()
+        this.forEach {
+            strList.add(it.permission)
+        }
+        return strList
+    }
 }

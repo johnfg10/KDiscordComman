@@ -1,17 +1,15 @@
 package io.github.johnfg10.storage
 
-import io.github.johnfg10.user.AUser
 import io.github.johnfg10.permission.AUserPermission
+import io.github.johnfg10.user.User
 
 interface IPermmisionStorage {
 
-    fun addUserPermission(userPermission: AUserPermission)
+    fun giveUserPermission(user: User, permission: String)
 
-    fun removeUserPermission(userPermission: AUserPermission)
+    fun findUserPermission(user: User) : AUserPermission?
 
-    fun updateUserPermission(userPermission: AUserPermission)
-
-    fun findUserPermission(AUser: AUser) : AUserPermission?
+    fun load()
 
     fun save()
 

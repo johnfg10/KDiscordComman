@@ -12,5 +12,5 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile 'io.github.johnfg10:KDiscordCommandDiscord4j:1.0.0'
+    compile project(":Discord4J")
 }
