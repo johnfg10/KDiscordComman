@@ -2,6 +2,7 @@ package io.github.johnfg10
 
 import io.github.johnfg10.command.CommandArg
 import io.github.johnfg10.command.CommandArgumentType
+import io.github.johnfg10.command.flags.CommandArgument
 import io.github.johnfg10.command.flags.CommandFlag
 import io.github.johnfg10.command.flags.CommandPhraser
 import io.github.johnfg10.permission.Permission
@@ -35,7 +36,7 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
     val ICHANNEL_TYPE = IChannel::class.createType()
     val IGUILD_TYPE = IGuild::class.createType()
     val IMESSAGE_TYPE = IMessage::class.createType()
-    val COMMAND_ARGUMENT = CommandArg::class.createType()
+    val COMMAND_ARGUMENT = CommandArgument::class.createType()
     val COMMAND_FLAG = CommandFlag::class.createType()
     val STRING_TYPE = String::class.createType()
     val LIST_IUSER_TYPE = MutableList::class.createType(listOf(KTypeProjection(null, IUSER_TYPE)))
@@ -57,7 +58,7 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
         val prefix: String = guildPrefix[user] ?: defaultPrefix
 
         if (message.startsWith(prefix)){
-            val msgSplit = message.split(" ")
+            val msgSplit = message.split(Regex("\\s"))
 
             val msgCommand = msgSplit[0].replace(prefix, "")
 
@@ -73,13 +74,16 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
                 if (permissionMap.contains(cmd)){
                     val perms = permissionMap[cmd] ?: throw IllegalArgumentException("Can not load permissions from permission maps")
 
+                    //println(perms)
+
                     val userPerm = iPermisionStorage.findUserPermission(user)
                     if (userPerm == null) {
                         msg.channel.sendMessage("Unfortunately it appears you do not have any permissions attached to your username, Required perms: ${perms.toFormattedString()}" )
                         return
                     }
 
-                    if (!userPerm.permissions.containsAll(perms.toStringList())){
+                    if(!userPerm.permissions.containsAll(userPerm.permissions)){
+                        //println("debug 1")
                         val remainingRequiredPerms = userPerm.permissions - perms.toStringList()
                         msg.channel.sendMessage("You are missing permissions, permissions missing are: ${remainingRequiredPerms.ToFormattedString()}")
                         return

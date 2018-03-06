@@ -1,5 +1,6 @@
 package io.github.johnfg10
 
+import io.github.johnfg10.TestBot.Companion.kDiscord
 import io.github.johnfg10.command.Command
 import io.github.johnfg10.command.CommandArg
 import io.github.johnfg10.command.CommandArgumentType
@@ -20,8 +21,6 @@ import sx.blah.discord.handle.obj.IUser
 
 lateinit var botToken: String
 
-lateinit var kDiscord: KDiscord4J
-
 fun main(args: Array<String>) {
     botToken = args[0]
     if (botToken.isEmpty())
@@ -29,8 +28,9 @@ fun main(args: Array<String>) {
 
     val client = createClient(botToken, false)
 
-    kDiscord = KDiscord4J(client)
+    kDiscord = KDiscord4J(client, "+")
     kDiscord+TestBot()::class
+    kDiscord+TestCommandHandler::class
 
     client.login()
 }
@@ -50,6 +50,11 @@ fun createClient(token: String, login: Boolean): IDiscordClient { // Returns a n
 }
 
 class TestBot {
+
+    companion object {
+        lateinit var kDiscord: KDiscord4J
+    }
+
     @Command("test", ["test"], "testing")
     @Permission("test.testing")
     fun testcmd(@CommandArg(CommandArgumentType.Author) author: IUser,

@@ -1,14 +1,20 @@
 package io.github.johnfg10
 
 import io.github.johnfg10.command.Command
+import io.github.johnfg10.command.CommandController
 import io.github.johnfg10.permission.Permission
 import io.github.johnfg10.storage.IPermmisionStorage
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
+import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
+import jdk.nashorn.internal.codegen.CompilerConstants.className
 
-public open class KDiscordCommand(open val iPermisionStorage: IPermmisionStorage, open val defaultPrefix: String) {
+
+
+open class KDiscordCommand(open val iPermisionStorage: IPermmisionStorage, open val defaultPrefix: String) {
 
     protected val classMap: MutableMap<KFunction<*>, KClass<*>> = mutableMapOf()
 
@@ -32,6 +38,13 @@ public open class KDiscordCommand(open val iPermisionStorage: IPermmisionStorage
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread(Runnable { this.shutdown() }))
+        val scanner = FastClasspathScanner("").scan()
+
+        val classes = scanner.classNamesToClassRefs(scanner.getNamesOfClassesWithAnnotation(CommandController::class.java))
+        classes.forEach {
+            RegisterCommand(it.kotlin)
+        }
+
     }
 
     public fun RegisterCommand(vararg  classes: KClass<*>){

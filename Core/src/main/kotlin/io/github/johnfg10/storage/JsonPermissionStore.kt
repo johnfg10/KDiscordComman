@@ -5,20 +5,22 @@ import io.github.johnfg10.permission.AUserPermission
 import io.github.johnfg10.permission.PermissionList
 import io.github.johnfg10.user.User
 import java.io.File
+import java.time.Instant
+import java.util.*
 
 /**
  * Very simplistic store used to store permission data
  */
 class JsonPermissionStore(private val location: File) : IPermmisionStorage {
-
-    //var userPermissionStore = mutableListOf<AUserPermission>()
     var userPermissionStore = PermissionList(mutableListOf())
+    var retryAttempts = 0
 
     init {
+        if (!location.exists())
+            location.createNewFile()
+
         if (location.exists()){
             load()
-
-            println(location.readText())
 
             userPermissionStore.permissions.forEach { println("ups entry Guild ID: ${it.guildId} User ID: ${it.userId} " +
                     "Perms: ${it.permissions.joinToString("\n")}") }
@@ -36,14 +38,42 @@ class JsonPermissionStore(private val location: File) : IPermmisionStorage {
         }
     }
 
+    override fun removeUserPermission(user: User, permission: String) {
+        val userPerm = findUserPermission(user)
+        if (userPerm != null){
+            userPerm.permissions.remove(permission)
+            userPermissionStore.permissions.remove(userPerm)
+            userPermissionStore.permissions.add(userPerm)
+        }
+    }
+
+
     override fun findUserPermission(user: User): AUserPermission? {
         return userPermissionStore.permissions.firstOrNull { it.userId == user.userId && it.guildId == user.guildId }
     }
 
     override fun load() {
         val gson = Gson()
-        userPermissionStore = gson.fromJson<PermissionList>(location.readText(),
-                PermissionList::class.java)
+
+        try{
+            userPermissionStore = gson.fromJson<PermissionList>(location.readText(),
+                    PermissionList::class.java)
+        }catch (e: IllegalStateException) {
+            if (retryAttempts > 1)
+                throw e
+            println(e.message)
+
+            val pathname = location.absolutePath.replace(location.name, "")
+
+            location.renameTo(File(pathname + "permissions-backup-${Instant.now().toEpochMilli()}.json"))
+
+            println(location.path)
+
+            if (!location.exists())
+                location.createNewFile()
+
+            retryAttempts++
+        }
     }
 
     override fun save() {
@@ -54,10 +84,5 @@ class JsonPermissionStore(private val location: File) : IPermmisionStorage {
 
     override fun shutdown() {
         this.save()
-    }
-
-    init {
-        if (!location.exists())
-            location.createNewFile()
     }
 }

@@ -1,4 +1,4 @@
-def aVersion = "1.0.3"
+def aVersion = "1.0.15"
 def aGroup = "io.github.johnfg10"
 def aDevName = "johnfg10"
 def aDevEmail = "j.gray26@hotmail.com"
@@ -16,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    //compile 'io.github.johnfg10:KDiscordCommandCore:1.0.0'
-    compile project(":Core")
+    //compile project(":Core")
+    compile "io.github.johnfg10:KDiscordCommandCore:1.0.11"
     compile "com.github.austinv11:Discord4J:2.9.3"
 }
 

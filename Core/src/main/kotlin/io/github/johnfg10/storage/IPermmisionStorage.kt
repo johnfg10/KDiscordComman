@@ -7,6 +7,8 @@ interface IPermmisionStorage {
 
     fun giveUserPermission(user: User, permission: String)
 
+    fun removeUserPermission(user: User, permission: String)
+
     fun findUserPermission(user: User) : AUserPermission?
 
     fun load()
