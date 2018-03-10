@@ -1,4 +1,4 @@
-def aVersion = "1.0.15"
+def aVersion = "1.0.17"
 def aGroup = "io.github.johnfg10"
 def aDevName = "johnfg10"
 def aDevEmail = "j.gray26@hotmail.com"
@@ -17,8 +17,8 @@ repositories {
 
 dependencies {
     //compile project(":Core")
-    compile "io.github.johnfg10:KDiscordCommandCore:1.0.11"
-    compile "com.github.austinv11:Discord4J:2.9.3"
+    compile "io.github.johnfg10:KDiscordCommandCore:1.0.13"
+    compile "com.github.austinv11:Discord4J:2.10.0"
 }
 
 // Create the pom configuration:
