@@ -4,4 +4,4 @@ import io.github.johnfg10.Guild
 import lombok.Data
 
 @Data
-open class User(open val userId: Long, override val guildId: Long) : Guild(guildId)
+open class User(open val userId: Long, open val userName: String)

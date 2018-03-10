@@ -1,4 +1,4 @@
-def aVersion = "1.0.11"
+def aVersion = "1.0.14"
 def aGroup = "io.github.johnfg10"
 def aDevName = "johnfg10"
 def aDevEmail = "j.gray26@hotmail.com"

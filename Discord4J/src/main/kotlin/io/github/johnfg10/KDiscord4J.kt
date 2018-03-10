@@ -5,9 +5,8 @@ import io.github.johnfg10.command.CommandArgumentType
 import io.github.johnfg10.command.flags.CommandArgument
 import io.github.johnfg10.command.flags.CommandFlag
 import io.github.johnfg10.command.flags.CommandPhraser
-import io.github.johnfg10.permission.Permission
-import io.github.johnfg10.storage.IPermmisionStorage
-import io.github.johnfg10.storage.JsonPermissionStore
+import io.github.johnfg10.roles.RoleHandler
+import io.github.johnfg10.roles.storage.JsonRoleStorage
 import io.github.johnfg10.user.User
 import sx.blah.discord.api.IDiscordClient
 import sx.blah.discord.api.events.EventSubscriber
@@ -21,11 +20,11 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.*
 
-class KDiscord4J(private val discordClient: IDiscordClient, override val iPermisionStorage: IPermmisionStorage,
-                 override val defaultPrefix: String) : KDiscordCommand(iPermisionStorage , defaultPrefix) {
+class KDiscord4J(private val discordClient: IDiscordClient, override val roleHandler: RoleHandler,
+                 override val defaultPrefix: String) : KDiscordCommand(roleHandler , defaultPrefix) {
 
     constructor(discordClient: IDiscordClient, file: File, defaultPrefix: String) : this(discordClient,
-            JsonPermissionStore(file), defaultPrefix)
+            RoleHandler(JsonRoleStorage(file)), defaultPrefix)
 
     constructor(discordClient: IDiscordClient, defaultPrefix: String) : this(discordClient, File("permissions.json"),
             defaultPrefix)
@@ -45,7 +44,6 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
     val LIST_COMMAND_ARGUMENT_TYPE =
             MutableList::class.createType(listOf(KTypeProjection(null, COMMAND_ARGUMENT)))
 
-
     init{
         discordClient.dispatcher.registerListener(this)
     }
@@ -53,9 +51,10 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
     @EventSubscriber
     fun onMessageReceivedEvent(msg: MessageReceivedEvent){
         val message = msg.message.content
-        val user = discordUserToUser(msg.author, msg.guild)
+        val guild = msg.guild.toKDiscordGuild()
 
-        val prefix: String = guildPrefix[user] ?: defaultPrefix
+
+        val prefix: String = guildPrefix[guild] ?: defaultPrefix
 
         if (message.startsWith(prefix)){
             val msgSplit = message.split(Regex("\\s"))
@@ -70,25 +69,23 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
             val cmd = cmdMap[cmdKey]
 
             if (cmd != null){
+                //val map = mapOf<>()
 
-                if (permissionMap.contains(cmd)){
-                    val perms = permissionMap[cmd] ?: throw IllegalArgumentException("Can not load permissions from permission maps")
-
-                    //println(perms)
-
-                    val userPerm = iPermisionStorage.findUserPermission(user)
-                    if (userPerm == null) {
-                        msg.channel.sendMessage("Unfortunately it appears you do not have any permissions attached to your username, Required perms: ${perms.toFormattedString()}" )
-                        return
-                    }
-
-                    if(!userPerm.permissions.containsAll(userPerm.permissions)){
-                        //println("debug 1")
-                        val remainingRequiredPerms = userPerm.permissions - perms.toStringList()
-                        msg.channel.sendMessage("You are missing permissions, permissions missing are: ${remainingRequiredPerms.ToFormattedString()}")
-                        return
+                if (roleMap.containsKey(cmd)) {
+                    val map = roleMap[cmd]!!
+                    map.forEach {
+                        val guildRole = msg.guild.getRolesByName(it.role).firstOrNull()
+                        if (guildRole != null){
+                            if (!msg.author.hasRole(guildRole)){
+                                msg.channel.sendMessage("You do not have the required role: ${it.role}")
+                                return
+                            }
+                        }else{
+                            msg.channel.sendMessage("This guild does not include the required role: ${it.role}")
+                        }
                     }
                 }
+
                 //if we get this far all permissions are correct
 
                 val args = mutableMapOf<KParameter, Any?>()
@@ -162,8 +159,12 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
 
     }
 
-    fun discordUserToUser(user: IUser, guild: IGuild): User {
-        return User(user.longID, guild.longID)
+    public fun IUser.toKDiscordUser(): User{
+        return User(this.longID, this.name)
+    }
+
+    public fun IGuild.toKDiscordGuild(): Guild {
+        return Guild(this.longID, this.name)
     }
 
     private fun List<String>.ToFormattedString() : String {
@@ -172,20 +173,5 @@ class KDiscord4J(private val discordClient: IDiscordClient, override val iPermis
             e -> str += "$e \n"
         }
         return str
-    }
-
-    private fun List<Permission>.toFormattedString() : String {
-        var str = ""
-        this.forEach { perm -> str += perm.permission + "\n"
-        }
-        return str
-    }
-
-    private fun List<Permission>.toStringList() : List<String> {
-        var strList = mutableListOf<String>()
-        this.forEach {
-            strList.add(it.permission)
-        }
-        return strList
     }
 }
